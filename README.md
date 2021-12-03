@@ -1,7 +1,7 @@
 # Sample program for the RPicoButton class
 
 This class is used for handling buttons on an RP2040 Raspberry Pico
-Up to 16 buttons can be queried simultaneously.
+up to 16 buttons can be queried simultaneously.
 The GPIOs from 0 to 22 can be used with up to sixteen consecutive pins.
 In addition to the query which buttons have been pressed, the duration of the press
 is also determined and made available. The init method must be used to initialize the
@@ -9,11 +9,11 @@ pins to be used.
 
 ## The test setup for the example program presented
 
-![Breadboard](https://github.com/DoImant/Screenshots/blob/main/Taster-Debounce.png?raw=true)
+![Breadboard](https://github.com/DoImant/Stuff/blob/main/Taster-Debounce/Console-output.png?raw=true)
 
 ## Console output of the sample program
 
-![Console](https://github.com/DoImant/Screenshots/blob/main/Console-output.png?raw=true)
+![Console](https://github.com/DoImant/Stuff/blob/main/Taster-Debounce/Taster-Debounce.png?raw=true)
 
 ## How to use the class headerfile in your code
 
