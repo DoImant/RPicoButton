@@ -5,7 +5,14 @@
 ///        Die Abfrage erfolgt mit Hilfe der RPicoButton Klasse
 /// 
 /// @date 2021-11-15
-/// @version 0.1
+///       Initiale Version
+///
+/// @date 2021-12-06
+///       Beispiel um eine Timerfunktion ergänzt. Es können jetzt zwei 
+///       Varianten des Programms compiliert werden. Je nachdem, ob
+///       "WITH_TIMER" definiert wurde oder nicht.
+///
+/// @version 0.2
 /// 
 /// @copyright Copyright (c) 2021
 /// 
@@ -15,6 +22,16 @@
 #include <iostream>
 #include <bitset>
 #include "rpicobutton.hpp"
+
+#define BASEPIN  12
+#define PINCOUNT  4
+
+#define WITH_TIMER  // Auskommentieren wenn Programm ohne Timer laufen soll.
+
+#ifdef WITH_TIMER
+bool rpt_callback(struct repeating_timer *t);
+#endif
+void print_state(uint32_t bstate, uint32_t pTime, std::initializer_list<uint32_t> bNum);
 
 //////////////////////////////////////////////////////////////////////////////
 /// @brief Hauptprogramm
@@ -26,12 +43,10 @@
 /// @return int 
 //////////////////////////////////////////////////////////////////////////////
 
-#define BASEPIN  12
-#define PINCOUNT  4
-
-void print_state(uint32_t bstate, uint32_t pTime, std::initializer_list<uint32_t> bNum);
-
 int main() {
+#ifdef WITH_TIMER
+  struct repeating_timer timer;                          // Timerstruktur für Repeatingtimer 
+#endif
   uint32_t pTime;
 
   stdio_init_all(); 
@@ -41,9 +56,23 @@ int main() {
   RPicoButton checkButtons(true, true, 100);  
   checkButtons.init(BASEPIN, PINCOUNT);
 
+#ifdef WITH_TIMER
+  /* 
+  * add_repeating_timer_ms
+  * Alle 1 ms schauen ob ein Taster gedrückt wurde.
+  */
+  add_repeating_timer_ms(1,rpt_callback,&checkButtons, &timer); 
+#endif
+
   printf("Gestartet. Warte auf Input...\n");
   while(true) {
+#ifndef WITH_TIMER
     checkButtons.tic();                            // Abfrage der Input Pins
+#else    
+    sleep_ms(1000);
+    printf(".");
+    fflush(stdout);
+#endif    
     uint32_t state {checkButtons.pressed()};       // Checken ob etwas gedrückt und wieder losgelassen wurde
     if (state) {
       pTime = checkButtons.pressing_time();
@@ -101,6 +130,29 @@ int main() {
   return 0;     
 }
 
+#ifdef WITH_TIMER
+//////////////////////////////////////////////////////////////////////////////
+/// @brief Callbackfunktion zum Abfragen der Taster
+/// 
+/// @param t 
+/// @return true 
+/// @return false 
+//////////////////////////////////////////////////////////////////////////////
+bool rpt_callback(struct repeating_timer *t) {
+  bool qFlag {false};
+  RPicoButton *rpbClass  {static_cast<RPicoButton *>(t->user_data)};  // Caste user_data Pointer auf Datentyp buttonData
+  rpbClass->tic();
+  return true;
+}
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
+/// @brief Ausgabe welche Tasten wie lange gedrückt wurden
+/// 
+/// @param bstate 
+/// @param bptime 
+/// @param bNum 
+//////////////////////////////////////////////////////////////////////////////
 void print_state(uint32_t bstate, uint32_t bptime, std::initializer_list<uint32_t> bNum) {
   const auto *tPtr = bNum.begin();             // Adresse des ersten Elementes aus der Übergabeliste
   char text[4][9] = {", " ," und ", " wurde "," wurden "};
